@@ -6,15 +6,56 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DICOMConverter"
         mc:Ignorable="d"
-        Title="DICOMConverter" Height="236.364" Width="500">
-    <Grid Margin="0,0,0,12">
-        <Button x:Name="buttonOpenFolder" Content="open files" HorizontalAlignment="Left" 
-                Margin="208,58,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="2.649,-1.143" Click="ButtonOpenFolder_Click"/>
-        <eo:RangeSlider x:Name="sliderIntensity" Minimum="0" Maximum="500" 
-                        TickFrequency="50" TickPlacement="TopLeft" Margin="54,10,54,140"
-                        RangeStart="235" RangeEnd="245" RenderTransformOrigin="0.5,0.5">
+        Title="DICOMConverter" Height="400" Width="330" ResizeMode="NoResize">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="8*"></RowDefinition>
+            <RowDefinition Height="1*"></RowDefinition>
+            <RowDefinition Height="2*"></RowDefinition>
+        </Grid.RowDefinitions>
 
-        </eo:RangeSlider>
-        <TextBox x:Name="textBoxLogs" HorizontalAlignment="Left" Height="84" Margin="10,99,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="472"/>
+
+        <StackPanel Grid.Row="0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="6*"></ColumnDefinition>
+                    <ColumnDefinition Width="1*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+
+                <Image Grid.Column="0" Name="Image" HorizontalAlignment="Left" 
+                       Height="250" Width="250" Margin="10,10,0,0" VerticalAlignment="Top"/>
+
+                <eo:RangeSlider Grid.Column="1" x:Name="SliderIntensity" Minimum="0" Maximum="500"
+                                TickFrequency="50" TickPlacement="BottomRight"
+                                RangeStart="235" RangeEnd="245" RenderTransformOrigin="0.5,0.5"
+                                Orientation="Vertical" Margin="0,5,5,5">
+                </eo:RangeSlider>
+            </Grid>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Margin="5">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column ="0" x:Name="ButtonOpenFolder" Content="open files" HorizontalAlignment="Center" 
+                        VerticalAlignment="Bottom" Width="75" Margin="0,0,0,0" Click="ButtonOpenFolder_Click"/>
+
+                <Button Grid.Column ="1" x:Name="BtnDown" Content="(-" HorizontalAlignment="Center" 
+                        VerticalAlignment="Bottom" Width="50" Click="BtnDown_Click"/>
+
+                <Button Grid.Column ="2" x:Name="BtnUp" Content="-)" HorizontalAlignment="Center" 
+                        VerticalAlignment="Bottom" Width="50" Click="BtnUp_Click"/>
+
+                <Button Grid.Column ="3" x:Name="ButtonSaveFolder" Content="save to file" HorizontalAlignment="Center" 
+                    VerticalAlignment="Center" Width="75" Margin="0,0,0,0" Click="ButtonSaveFolder_Click"/>
+            </Grid>
+        </StackPanel>
+
+        <TextBox Grid.Row ="2" x:Name="TextBoxLogs" TextWrapping="Wrap" Margin="5" VerticalScrollBarVisibility="Visible"/>
     </Grid>
 </Window>
