@@ -2,15 +2,14 @@
 using Emgu.CV.Structure;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
-using System.Windows.Media.Imaging;
+using DICOMConverter.Core;
 
-namespace DICOMConverter
+namespace DICOMConverter.Wpf
 {
     /// <summary>
     /// Логика взаимодействия для MainWindow.xaml
@@ -18,14 +17,14 @@ namespace DICOMConverter
     public partial class MainWindow
     {
         private List<Image<Gray, double>> _arrayImages;
-        private DicomManager dcmManager;
+        private readonly Manager _dcmManager;
         private int _currIndex;
         private string[] _fileNames;
 
         public MainWindow()
         {
             InitializeComponent();
-            dcmManager = new DicomManager();
+            _dcmManager = new Manager();
         }
 
         private void ButtonOpenFolder_Click(object sender, RoutedEventArgs e)
@@ -73,7 +72,7 @@ namespace DICOMConverter
                         max = SliderIntensity.RangeEnd;
                         TextBoxLogs.AppendText("Processing, please wait...\r\n");
                     });
-                    var images = dcmManager.ImagesDicom(_fileNames, min, max);
+                    var images = _dcmManager.GrayscaleImagesFromDicom(_fileNames, min, max);
 
                     Dispatcher.Invoke(() =>
                     {
@@ -83,7 +82,7 @@ namespace DICOMConverter
 
                 _currIndex = 0;
                 TextBoxLogs.AppendText("Done!\r\n");
-                Image.Source = BitmapToImageSource(_arrayImages[_currIndex].Bitmap);
+                Image.Source = _arrayImages[_currIndex].BitmapImage();
             }
             catch (Exception ex)
             {
@@ -105,7 +104,7 @@ namespace DICOMConverter
 
                 if (fileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    string name = "";
+                    var name = "";
                     double min = 0;
                     double max = 0;
 
@@ -119,7 +118,7 @@ namespace DICOMConverter
                             TextBoxLogs.AppendText("Saving, please wait...\r\n");
                         });
 
-                        dcmManager.Xyz(_arrayImages, min, max, name);
+                        _dcmManager.SaveToXyz(_arrayImages, min, max, name);
                     });
 
                     TextBoxLogs.AppendText("Done!\r\n");
@@ -141,7 +140,7 @@ namespace DICOMConverter
                     _currIndex = _arrayImages.Count - 1;
                 }
 
-                Image.Source = BitmapToImageSource(_arrayImages[_currIndex].Bitmap);
+                Image.Source = _arrayImages[_currIndex].BitmapImage();
                 _currIndex--;
             }
         }
@@ -154,24 +153,8 @@ namespace DICOMConverter
                 {
                     _currIndex = 0;
                 }
-                Image.Source = BitmapToImageSource(_arrayImages[_currIndex].Bitmap);
+                Image.Source = _arrayImages[_currIndex].BitmapImage();
                 _currIndex++;
-            }
-        }
-
-        private static BitmapImage BitmapToImageSource(Bitmap bitmap)
-        {
-            using (var memory = new MemoryStream())
-            {
-                bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Bmp);
-                memory.Position = 0;
-                var bitmapimage = new BitmapImage();
-                bitmapimage.BeginInit();
-                bitmapimage.StreamSource = memory;
-                bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapimage.EndInit();
-
-                return bitmapimage;
             }
         }
     }

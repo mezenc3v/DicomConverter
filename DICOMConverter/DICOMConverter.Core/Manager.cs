@@ -1,38 +1,23 @@
-﻿using Emgu.CV;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Emgu.CV;
 using Emgu.CV.Structure;
 using EvilDICOM.Core;
 using EvilDICOM.Core.Element;
 using EvilDICOM.Core.Helpers;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace DICOMConverter
+namespace DICOMConverter.Core
 {
-    public class DicomManager
+    public class Manager
     {
-        public List<DICOMObject> ReadAllObjects(string[] dicomFiles)
+        private IEnumerable<DICOMObject> ReadAllObjects(string[] dicomFiles)
         {
             return dicomFiles.Select(name => DICOMObject.Read(name)).ToList();
         }
 
-        public List<Image<Gray, double>> ImagesDicom(string[] fileNames, double minValueIntensity, double maxValueIntensity)
-        {
-            var dcmList = ReadAllObjects(fileNames);
-
-            dcmList = dcmList.OrderBy(dcm => dcm.FindFirst(TagHelper.LOCATION)).ToList();
-
-            var imgs = new Image<Gray, double>[dcmList.Count].ToList();
-
-            Parallel.For(0, imgs.Count, k =>
-            {
-                imgs[k] = ComputeImage(dcmList[k], minValueIntensity, maxValueIntensity);
-            });
-            return imgs;
-        }
-
-        private Image<Gray, double> ComputeImage(DICOMObject obj, double minValueIntensity, double maxValueIntensity)
+        private Image<Gray, double> GrayscaleImageFromDicomObject(DICOMObject obj, double minValueIntensity, double maxValueIntensity)
         {
             var str = obj.PixelStream;
             var height = ((UnsignedShort)obj.FindFirst(TagHelper.ROWS)).Data;
@@ -76,10 +61,22 @@ namespace DICOMConverter
             return image;
         }
 
-        public void Xyz(List<Image<Gray, double>> images, double minIntensity, double maxIntensity, string fileName)
+        public List<Image<Gray, double>> GrayscaleImagesFromDicom(string[] fileNames, double minValueIntensity, double maxValueIntensity)
         {
-            var points = new List<double[]>();
+            var dcmList = ReadAllObjects(fileNames).OrderBy(dcm => dcm.FindFirst(TagHelper.LOCATION));
 
+            var imgs = new Image<Gray, double>[dcmList.Count()].ToList();
+
+            Parallel.For(0, imgs.Count, k =>
+            {
+                imgs[k] = GrayscaleImageFromDicomObject(dcmList.ElementAt(k), minValueIntensity, maxValueIntensity);
+            });
+
+            return imgs;
+        }
+
+        public void SaveToXyz(List<Image<Gray, double>> images, double minIntensity, double maxIntensity, string fileName)
+        {
             var file = new StreamWriter(fileName);
 
             for (int z = 0; z < images.Count; z++)
@@ -88,11 +85,9 @@ namespace DICOMConverter
                     {
                         if (images[z][x, y].Intensity > minIntensity && images[z][x, y].Intensity < maxIntensity)
                         {
-                            points.Add(new double[] { x, y, z });
                             file.Write(x + " " + y + " " + z + "\r\n");
                         }
                     }
-
             file.Close();
         }
     }
